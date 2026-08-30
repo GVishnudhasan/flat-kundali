@@ -15,10 +15,7 @@ interface Profile {
   language: string; // BCP-47 like "hi-IN"
 }
 
-const HOUSE_QUERIES: Record<
-  Exclude<HouseKey, "agreement">,
-  (l: Listing, p: Profile) => string
-> = {
+const HOUSE_QUERIES: Record<HouseKey, (l: Listing, p: Profile) => string> = {
   water: (l) => `${l.locality} water shortage tanker borewell Cauvery supply`,
   commute: (l, p) => `${l.locality} to ${p.office || "city center"} commute traffic time`,
   society: (l) => `"${l.society}" resident reviews complaints maintenance`,
@@ -41,7 +38,7 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
 const looksKannada = (s: string) => /[ಀ-೿]/.test(s);
 
 async function runHouse(
-  house: Exclude<HouseKey, "agreement">,
+  house: HouseKey,
   listing: Listing,
   profile: Profile,
   emit: Emit
@@ -77,17 +74,6 @@ Max 2 evidence items. Only use provided material; if evidence is thin, score con
   );
 }
 
-async function runAgreement(b64: string, profile: Profile, emit: Emit): Promise<HouseResult> {
-  emit({ type: "agent_log", message: "Sarvam Parse · extracting clauses from agreement PDF…", tone: "reason" });
-  const text = (await sarvam.parsePdf(b64)).slice(0, 12_000);
-  return sarvam.chatJSON<HouseResult>(
-    `You review Indian 11-month rent agreements for predatory clauses (lock-in with deposit forfeiture, arbitrary painting/cleaning charges, escalation >5%, notice-period traps, entry rights).
-Score 0 (predatory) to 6 (clean) for tenant ${JSON.stringify(profile)}.
-Return JSON: {"house":"agreement","score":<0-6>,"verdict_one_line":"<max 140 chars>","evidence":[{"quote":"<verbatim clause>","source_name":"rent agreement · Sarvam Parse","url":"#"}],"dealbreaker":<bool>}. Max 3 evidence items.`,
-    text
-  );
-}
-
 export async function runPipeline(req: AnalyzeRequest, emit: Emit): Promise<void> {
   // 1. INTAKE — parse the tenant's spoken/typed life-sentence.
   emit({ type: "status", message: "Reading listing…" });
@@ -112,18 +98,14 @@ Return JSON: {"society":"","locality":"","bhk":"","rent":<number>,"deposit":<num
     tone: "reason",
   });
 
-  // 3. FAN-OUT — six dimension agents + optional agreement agent, in parallel.
-  const dims = Object.keys(HOUSE_QUERIES) as Array<Exclude<HouseKey, "agreement">>;
+  // 3. FAN-OUT — six dimension agents in parallel.
+  const dims = Object.keys(HOUSE_QUERIES) as HouseKey[];
   const tasks: Array<Promise<HouseResult>> = dims.map((h) => {
     emit({ type: "house_running", house: h });
     return withTimeout(runHouse(h, listing, profile, emit), HOUSE_TIMEOUT_MS);
   });
-  if (req.agreementB64) {
-    emit({ type: "house_running", house: "agreement" });
-    tasks.push(withTimeout(runAgreement(req.agreementB64, profile, emit), HOUSE_TIMEOUT_MS * 1.5));
-  }
 
-  const keys: HouseKey[] = [...dims, ...(req.agreementB64 ? (["agreement"] as const) : [])];
+  const keys: HouseKey[] = dims;
   const settled = await Promise.allSettled(
     tasks.map(async (t, i) => {
       const r = await t;
@@ -136,7 +118,7 @@ Return JSON: {"society":"","locality":"","bhk":"","rent":<number>,"deposit":<num
     if (s.status === "fulfilled") houses.push(s.value);
     else {
       const k = keys[i];
-      const q = k === "agreement" ? "" : HOUSE_QUERIES[k](listing, profile);
+      const q = HOUSE_QUERIES[k](listing, profile);
       emit({
         type: "house_failed",
         house: k,

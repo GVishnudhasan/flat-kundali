@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { HOUSES, SELF_DIAMOND, scoreStatus } from "@/lib/houses";
+import { HOUSES, SELF_DIAMOND, YOU_DIAMOND, scoreStatus } from "@/lib/houses";
 import type { HouseKey, HouseResult, HouseStatus, Listing, Verdict } from "@/lib/types";
 
 const STATUS_FILL: Record<string, string> = {
@@ -16,6 +16,7 @@ interface Props {
   results: Partial<Record<HouseKey, HouseResult>>;
   listing: Listing | null;
   verdict: Verdict | null;
+  profileLine: string; // shown in the bottom "You" diamond
 }
 
 function useCountUp(target: number | null, duration = 1400) {
@@ -35,7 +36,7 @@ function useCountUp(target: number | null, duration = 1400) {
   return value;
 }
 
-export default function KundaliChart({ houseStates, results, listing, verdict }: Props) {
+export default function KundaliChart({ houseStates, results, listing, verdict, profileLine }: Props) {
   const [hover, setHover] = useState<{ key: HouseKey; x: number; y: number } | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const guna = useCountUp(verdict ? verdict.guna : null);
@@ -116,8 +117,9 @@ export default function KundaliChart({ houseStates, results, listing, verdict }:
           );
         })}
 
-        {/* self diamond (lagna) subtle fill */}
+        {/* self diamond (lagna) + you diamond subtle fills */}
         <polygon points={SELF_DIAMOND} fill="#e7c368" opacity={listing ? 0.05 : 0} />
+        <polygon points={YOU_DIAMOND} fill="#e7c368" opacity={0.04} />
 
         {/* ---- gold linework ---- */}
         <g stroke="url(#goldStroke)" fill="none" filter="url(#goldGlow)">
@@ -155,6 +157,16 @@ export default function KundaliChart({ houseStates, results, listing, verdict }:
               लग्न · AWAITING THE FLAT
             </text>
           )}
+        </g>
+
+        {/* ---- you diamond content: the tenant ---- */}
+        <g textAnchor="middle" pointerEvents="none">
+          <text x="320" y="468" fill="#e7c368" fontSize="13" letterSpacing="1.5" opacity="0.8" fontFamily="var(--font-deva)">
+            वर · YOU
+          </text>
+          <text x="320" y="492" fill="#a9afc3" fontSize="12.5" fontFamily="var(--font-body)">
+            {profileLine.length > 46 ? `${profileLine.slice(0, 46)}…` : profileLine}
+          </text>
         </g>
 
         {/* ---- house content ---- */}

@@ -12,7 +12,8 @@ export interface HouseDef {
 
 // Geometry for a 640x640 North-Indian kundali chart.
 // Outer square (20,20)→(620,620); inner rotated square on edge midpoints;
-// diagonals corner-to-corner. Diamonds + corner triangles become the houses.
+// diagonals corner-to-corner. Six houses × 6 guna = a perfect 36.
+// Top diamond = the flat (lagna) · bottom diamond = the tenant (you).
 export const HOUSES: HouseDef[] = [
   {
     key: "water",
@@ -62,21 +63,18 @@ export const HOUSES: HouseDef[] = [
     points: "620,620 620,320 320,620",
     anchor: [522, 528],
   },
-  {
-    key: "agreement",
-    label: "Agreement",
-    hindi: "अनुबंध",
-    emoji: "📜",
-    points: "320,620 170,470 320,320 470,470",
-    anchor: [320, 470],
-  },
 ];
 
-// The top diamond is the "lagna" — house of the self. It holds the listing identity.
+// Top diamond — the flat under review (lagna, house of the subject).
 export const SELF_DIAMOND = "320,20 470,170 320,320 170,170";
+// Bottom diamond — the tenant. Kundali matching is between two parties.
+export const YOU_DIAMOND = "320,620 170,470 320,320 470,470";
 
 export const scoreStatus = (score: number, dealbreaker: boolean) =>
   dealbreaker || score < 3 ? "risk" : score < 4.5 ? "caution" : "good";
 
 export const scoreWord = (score: number, dealbreaker: boolean) =>
   dealbreaker ? "Dealbreaker" : score < 3 ? "Weak" : score < 4.5 ? "Mixed" : "Strong";
+
+// Guna (0–36) → status band, shared by match cards and the medallion.
+export const gunaStatus = (guna: number) => (guna >= 27 ? "good" : guna >= 18 ? "caution" : "risk");

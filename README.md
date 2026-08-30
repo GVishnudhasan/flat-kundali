@@ -12,13 +12,24 @@ Built in 90 minutes for the **AI Engineer Mixer build sprint** (Sarvam.ai × Ana
 
 ## The flow
 
-1. Paste a listing URL (NoBroker / 99acres / MagicBricks) — or speak it.
-2. Speak your life in one line, Hinglish welcome:
-   *"Main Whitefield mein kaam karta hoon, do din WFH, ek dog hai, budget 30k."*
-3. Optionally attach the 11-month rent agreement PDF.
-4. Watch the kundali draw itself as seven agents complete, house by house.
-5. Get a **guna score /36**, per-house live evidence with sources, and a
-   **spoken Hindi verdict** you can play to your parents.
+Two ways in:
+
+- **🎙️ Find flats for me** — speak your life in one line (Hinglish welcome:
+  *"Main Whitefield mein kaam karta hoon, ek dog hai, budget 30k"*). Sarvam
+  extracts your intent, agents build robust search prompts, Anakin discovers
+  live listings, each is scraped and scored against you, and you get a
+  **ranked list of rishtas** with guna scores /36 — location fit included.
+- **🔗 I found a flat — check it** — paste a listing link. It gets vetted,
+  similar flats nearby are discovered and ranked alongside it, and **your
+  link gets priority** (featured + ranking boost).
+
+From any ranked match: **Full kundali reading** — six agents (water, commute,
+society, price, red flags, livability) fill in the chart live, top diamond =
+the flat, bottom diamond = you, spoken Hindi verdict at the end.
+
+**📜 Agreement X-Ray (separate tool)** — drop an 11-month rent agreement PDF;
+Sarvam Document AI flags predatory clauses with severity chips and speaks the
+verdict in Hindi.
 
 ## Where the sponsor APIs are load-bearing
 

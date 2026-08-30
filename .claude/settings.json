@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git credential-osxkeychain *)",
+      "Bash(security find-internet-password *)",
+      "Bash(security find-generic-password *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}
