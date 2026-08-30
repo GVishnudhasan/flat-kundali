@@ -13,7 +13,11 @@
       "Bash(/usr/bin/python3 -)",
       "Bash(curl -s -o /dev/null -w \"dev: %{http_code}\\\\n\" http://localhost:3123)",
       "Bash(SHOOT_BASE=http://localhost:3123 node scripts/shoot.mjs)",
-      "Bash(rm -f .cache/*.json)"
+      "Bash(rm -f .cache/*.json)",
+      "WebFetch(domain:docs.sarvam.ai)",
+      "Bash(node -e \"console.log\\(require\\('fflate/package.json'\\).version\\)\")",
+      "Bash(npx tsc *)",
+      "Bash(echo \"tsc exit: $?\")"
     ]
   }
 }

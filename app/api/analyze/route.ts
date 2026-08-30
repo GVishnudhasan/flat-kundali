@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { createHash } from "crypto";
 import { promises as fs } from "fs";
+import os from "os";
 import path from "path";
 import { MOCK_CANDIDATES, MOCK_RUN } from "@/lib/mock";
 import { runPipeline } from "@/lib/pipeline";
@@ -9,7 +10,9 @@ import type { AnalyzeEvent, AnalyzeRequest } from "@/lib/types";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const CACHE_DIR = path.join(process.cwd(), ".cache");
+// Serverless filesystems (e.g. Vercel's /var/task) are read-only — cache into
+// the OS temp dir, which is writable, and treat every cache op as best-effort.
+const CACHE_DIR = path.join(os.tmpdir(), "flat-kundali-cache");
 const isMock = () => !process.env.SARVAM_API_KEY || !process.env.ANAKIN_API_KEY || process.env.MOCK === "1";
 
 const sse = (e: AnalyzeEvent) => `data: ${JSON.stringify(e)}\n\n`;
@@ -54,8 +57,13 @@ export async function POST(req: NextRequest) {
             last = now;
             emit(e);
           });
-          await fs.mkdir(CACHE_DIR, { recursive: true });
-          await fs.writeFile(path.join(CACHE_DIR, `${key}.json`), JSON.stringify(recorded));
+          // best-effort: never let a cache-write failure surface as a run error
+          try {
+            await fs.mkdir(CACHE_DIR, { recursive: true });
+            await fs.writeFile(path.join(CACHE_DIR, `${key}.json`), JSON.stringify(recorded));
+          } catch {
+            /* read-only FS or quota — the run already succeeded, ignore */
+          }
         }
       } catch (err) {
         emit({ type: "error", message: err instanceof Error ? err.message : "Pipeline failed" });

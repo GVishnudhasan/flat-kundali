@@ -403,58 +403,62 @@ export default function Page() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4 }}
-            className="grid gap-10 pt-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]"
+            className="pt-8"
           >
-            <div className="lg:sticky lg:top-8 lg:self-start">
-              <button onClick={() => navigate("matches")} className="mb-4 text-[12.5px] text-ink3 hover:text-gold">
-                ← Back to matches
-              </button>
-              <KundaliChart
-                houseStates={houseStates}
-                results={results}
-                listing={listing}
-                verdict={verdict}
-                profileLine={profileLine}
-              />
-            </div>
+            {/* top: chart (sticky) + verdict — its own grid so sticky is bounded here */}
+            <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+              <div className="lg:sticky lg:top-8 lg:self-start">
+                <button onClick={() => navigate("matches")} className="mb-4 text-[12.5px] text-ink3 hover:text-gold">
+                  ← Back to matches
+                </button>
+                <KundaliChart
+                  houseStates={houseStates}
+                  results={results}
+                  listing={listing}
+                  verdict={verdict}
+                  profileLine={profileLine}
+                />
+              </div>
 
-            <div className="space-y-5 lg:pt-9">
-              {listing && (
-                <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-2xl p-5">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-ink3">Reading the kundali of</p>
-                  <h2 className="mt-1 font-display text-[24px] text-ink">{listing.society}</h2>
-                  <p className="mt-0.5 text-[13px] text-ink2">
-                    {listing.locality} · {listing.bhk}{listing.sqft ? ` · ${listing.sqft} sqft` : ""}
-                  </p>
-                  <div className="mt-3 flex gap-6">
-                    <div>
-                      <p className="text-[10.5px] uppercase tracking-widest text-ink3">Rent</p>
-                      <p className="text-[17px] font-semibold text-ink">
-                        ₹{listing.rent.toLocaleString("en-IN")}
-                        <span className="text-[12px] font-normal text-ink3">/mo</span>
-                      </p>
-                    </div>
-                    {listing.deposit > 0 && (
+              <div className="space-y-5 lg:pt-9">
+                {listing && (
+                  <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-2xl p-5">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-ink3">Reading the kundali of</p>
+                    <h2 className="mt-1 font-display text-[24px] text-ink">{listing.society}</h2>
+                    <p className="mt-0.5 text-[13px] text-ink2">
+                      {listing.locality} · {listing.bhk}{listing.sqft ? ` · ${listing.sqft} sqft` : ""}
+                    </p>
+                    <div className="mt-3 flex gap-6">
                       <div>
-                        <p className="text-[10.5px] uppercase tracking-widest text-ink3">Deposit</p>
-                        <p className="text-[17px] font-semibold text-ink">₹{listing.deposit.toLocaleString("en-IN")}</p>
+                        <p className="text-[10.5px] uppercase tracking-widest text-ink3">Rent</p>
+                        <p className="text-[17px] font-semibold text-ink">
+                          ₹{listing.rent.toLocaleString("en-IN")}
+                          <span className="text-[12px] font-normal text-ink3">/mo</span>
+                        </p>
                       </div>
-                    )}
+                      {listing.deposit > 0 && (
+                        <div>
+                          <p className="text-[10.5px] uppercase tracking-widest text-ink3">Deposit</p>
+                          <p className="text-[17px] font-semibold text-ink">₹{listing.deposit.toLocaleString("en-IN")}</p>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+
+                {verdict ? <VerdictPanel verdict={verdict} /> : <AgentFeed lines={deepFeed} live={!verdict && !error} />}
+
+                {error && (
+                  <div className="glass rounded-2xl border !border-risk/35 p-4 text-[13px] text-risk">
+                    △ {error} — the agents kept whatever evidence they had.
                   </div>
-                </motion.div>
-              )}
-
-              {verdict ? <VerdictPanel verdict={verdict} /> : <AgentFeed lines={deepFeed} live={!verdict && !error} />}
-
-              {error && (
-                <div className="glass rounded-2xl border !border-risk/35 p-4 text-[13px] text-risk">
-                  △ {error} — the agents kept whatever evidence they had.
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
+            {/* evidence: a separate block below, outside the sticky grid so nothing overlaps */}
             {orderedResults.length > 0 && (
-              <div className="lg:col-span-2">
+              <div className="mt-12">
                 <div className="mb-4 mt-2 flex items-center gap-4">
                   <h3 className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.26em] text-ink3">
                     Evidence · house by house
