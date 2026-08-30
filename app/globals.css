@@ -1,0 +1,155 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #070a13;
+  --gold: #e7c368;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: #f2efe6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ---- celestial backdrop ---- */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(1100px 700px at 50% -10%, rgba(41, 52, 98, 0.55), transparent 65%),
+    radial-gradient(900px 600px at 85% 110%, rgba(58, 42, 90, 0.35), transparent 60%),
+    radial-gradient(700px 500px at 8% 90%, rgba(24, 48, 66, 0.4), transparent 60%),
+    var(--bg);
+}
+
+.stars {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    radial-gradient(1.2px 1.2px at 12% 22%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 28% 68%, rgba(231, 195, 104, 0.5), transparent),
+    radial-gradient(1.4px 1.4px at 44% 12%, rgba(255, 255, 255, 0.42), transparent),
+    radial-gradient(1px 1px at 61% 41%, rgba(255, 255, 255, 0.35), transparent),
+    radial-gradient(1.6px 1.6px at 73% 80%, rgba(231, 195, 104, 0.42), transparent),
+    radial-gradient(1px 1px at 84% 18%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1.2px 1.2px at 93% 58%, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(1px 1px at 6% 48%, rgba(231, 195, 104, 0.35), transparent),
+    radial-gradient(1.3px 1.3px at 37% 88%, rgba(255, 255, 255, 0.38), transparent),
+    radial-gradient(1px 1px at 52% 58%, rgba(255, 255, 255, 0.28), transparent);
+  animation: twinkle 7s ease-in-out infinite alternate;
+}
+
+@keyframes twinkle {
+  from { opacity: 0.55; }
+  to { opacity: 1; }
+}
+
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---- glass surfaces ---- */
+.glass {
+  background: linear-gradient(160deg, rgba(18, 25, 46, 0.72), rgba(11, 16, 30, 0.62));
+  border: 1px solid rgba(231, 195, 104, 0.14);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.gold-ring {
+  border: 1px solid rgba(231, 195, 104, 0.35);
+}
+
+.hairline {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(231, 195, 104, 0.35), transparent);
+}
+
+/* ---- gold CTA ---- */
+.btn-gold {
+  background: linear-gradient(160deg, #f0d48a, #d3a94e 55%, #b98e33);
+  color: #171204;
+  box-shadow: 0 6px 26px rgba(211, 169, 78, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.btn-gold:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 34px rgba(211, 169, 78, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  filter: brightness(1.04);
+}
+
+.btn-gold:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ---- inputs ---- */
+.field {
+  background: rgba(7, 10, 19, 0.65);
+  border: 1px solid rgba(231, 195, 104, 0.16);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.field:focus-within,
+.field:focus {
+  outline: none;
+  border-color: rgba(231, 195, 104, 0.5);
+  box-shadow: 0 0 0 3px rgba(231, 195, 104, 0.1);
+}
+
+.field::placeholder {
+  color: #565d78;
+}
+
+/* ---- feed scrollbar ---- */
+.feed::-webkit-scrollbar {
+  width: 6px;
+}
+.feed::-webkit-scrollbar-thumb {
+  background: rgba(231, 195, 104, 0.18);
+  border-radius: 3px;
+}
+
+/* ---- slow ceremonial rotation for the decorative ring ---- */
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+.spin-slow {
+  animation: spin-slow 60s linear infinite;
+  transform-origin: center;
+}
+
+/* ---- recording pulse ---- */
+@keyframes rec-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(216, 89, 107, 0.5); }
+  50% { box-shadow: 0 0 0 9px rgba(216, 89, 107, 0); }
+}
+.rec-pulse {
+  animation: rec-pulse 1.4s ease-out infinite;
+}
+
+/* ---- audio EQ bars ---- */
+@keyframes eq {
+  0%, 100% { transform: scaleY(0.35); }
+  50% { transform: scaleY(1); }
+}
+.eq-bar {
+  transform-origin: bottom;
+  animation: eq 0.9s ease-in-out infinite;
+}
