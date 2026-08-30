@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { HOUSES, scoreStatus, scoreWord } from "@/lib/houses";
+import { Icon } from "./icons";
 import type { HouseResult } from "@/lib/types";
 
 const STATUS_TEXT: Record<string, string> = {
@@ -27,7 +28,7 @@ export default function HouseCard({ result, index }: { result: HouseResult; inde
     >
       <header className="mb-2.5 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <span className="text-xl">{def.emoji}</span>
+          <Icon name={def.icon as never} size={20} className="text-gold" />
           <div>
             <h4 className="text-[13px] font-semibold tracking-wide text-ink">{def.label}</h4>
             <p className="font-deva text-[12px] leading-none text-ink3">{def.hindi}</p>

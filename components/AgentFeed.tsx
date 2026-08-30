@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useEffect, useRef } from "react";
+import { Icon } from "./icons";
 
 export interface FeedLine {
   id: number;
@@ -10,11 +11,11 @@ export interface FeedLine {
 }
 
 const TONE_ICON: Record<string, string> = {
-  search: "🔍",
-  scrape: "📄",
-  translate: "🈯",
-  reason: "✦",
-  warn: "△",
+  search: "search",
+  scrape: "file",
+  translate: "translate",
+  reason: "sparkle",
+  warn: "alert",
 };
 
 export default function AgentFeed({ lines, live }: { lines: FeedLine[]; live: boolean }) {
@@ -47,8 +48,8 @@ export default function AgentFeed({ lines, live }: { lines: FeedLine[]; live: bo
             transition={{ duration: 0.35 }}
             className="flex items-start gap-2.5 text-[12.5px] leading-snug text-ink2"
           >
-            <span className="mt-px w-4 shrink-0 text-center text-gold/80">
-              {TONE_ICON[l.tone ?? "reason"] ?? "✦"}
+            <span className={`mt-0.5 w-4 shrink-0 text-center ${l.tone === "warn" ? "text-caution" : "text-gold/80"}`}>
+              <Icon name={(TONE_ICON[l.tone ?? "reason"] ?? "sparkle") as never} size={13} />
             </span>
             <span>{l.message}</span>
           </motion.div>

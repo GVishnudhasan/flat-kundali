@@ -106,7 +106,7 @@ async function discoverCandidates(req: MatchRequest, intent: Intent, emit: Emit)
   }
 
   // round-robin across platforms for source diversity
-  const hosts = [...buckets.keys()];
+  const hosts = Array.from(buckets.keys());
   for (let round = 0; round < MAX_PER_PLATFORM; round++) {
     for (const host of hosts) {
       if (candidates.length >= MAX_CANDIDATES + (req.mode === "link" ? 1 : 0)) break;

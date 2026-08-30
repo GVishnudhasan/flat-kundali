@@ -2,12 +2,13 @@
 
 import { motion } from "framer-motion";
 import { useRef, useState } from "react";
+import { Icon } from "./icons";
 import type { AgreementReport } from "@/lib/types";
 
 const SEV: Record<string, { chip: string; label: string; icon: string }> = {
-  risk: { chip: "border-risk/40 text-risk", label: "Predatory", icon: "⚠" },
-  caution: { chip: "border-caution/40 text-caution", label: "Negotiate", icon: "△" },
-  good: { chip: "border-good/40 text-good", label: "Fair", icon: "✓" },
+  risk: { chip: "border-risk/40 text-risk", label: "Predatory", icon: "alert" },
+  caution: { chip: "border-caution/40 text-caution", label: "Negotiate", icon: "alert" },
+  good: { chip: "border-good/40 text-good", label: "Fair", icon: "check" },
 };
 
 export default function AgreementXray({ onBack }: { onBack: () => void }) {
@@ -74,7 +75,9 @@ export default function AgreementXray({ onBack }: { onBack: () => void }) {
         ← Back
       </button>
       <div className="mb-2 flex items-center gap-3">
-        <span className="text-2xl">📜</span>
+        <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-gold/25 bg-black/25 text-gold">
+          <Icon name="file" size={20} />
+        </span>
         <h1 className="font-display text-[34px] text-ink">Agreement X-Ray</h1>
       </div>
       <p className="mb-8 text-[14px] leading-relaxed text-ink2">
@@ -99,7 +102,7 @@ export default function AgreementXray({ onBack }: { onBack: () => void }) {
                 onClick={() => fileRef.current?.click()}
                 className="field mx-auto flex w-full max-w-md flex-col items-center gap-2 rounded-2xl border-dashed px-6 py-10 hover:!border-gold/45"
               >
-                <span className="text-3xl">📄</span>
+                <span className="text-gold"><Icon name="file" size={30} strokeWidth={1.4} /></span>
                 <span className="text-[14px] font-medium text-ink">Drop your agreement PDF</span>
                 <span className="text-[12px] text-ink3">or click to browse · under 6 MB</span>
               </button>
@@ -130,8 +133,8 @@ export default function AgreementXray({ onBack }: { onBack: () => void }) {
               </span>
             </div>
             <p className="text-[14px] leading-relaxed text-ink2">{report.verdict_one_line}</p>
-            <button onClick={play} className="btn-gold mt-4 w-full rounded-xl px-5 py-3 text-[13.5px] font-semibold">
-              {playing ? "◼ Playing…" : "🔊 Suno — verdict in Hindi"}
+            <button onClick={play} className="btn-gold mt-4 flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-[13.5px] font-semibold">
+              {playing ? <><Icon name="stop" size={14} className="fill-current" /> Playing…</> : <><Icon name="volume" size={16} /> Suno — verdict in Hindi</>}
             </button>
           </div>
 
@@ -144,8 +147,8 @@ export default function AgreementXray({ onBack }: { onBack: () => void }) {
               className={`glass rounded-2xl p-5 ${cl.severity === "risk" ? "!border-risk/35" : ""}`}
             >
               <div className="mb-2 flex items-center gap-2">
-                <span className={`rounded-full border px-2.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-widest ${SEV[cl.severity].chip}`}>
-                  {SEV[cl.severity].icon} {SEV[cl.severity].label}
+                <span className={`flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-widest ${SEV[cl.severity].chip}`}>
+                  <Icon name={SEV[cl.severity].icon as never} size={11} /> {SEV[cl.severity].label}
                 </span>
               </div>
               <p className="text-[13px] italic leading-relaxed text-ink">&ldquo;{cl.quote}&rdquo;</p>

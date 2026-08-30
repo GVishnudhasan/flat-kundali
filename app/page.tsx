@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import AgentFeed, { type FeedLine } from "@/components/AgentFeed";
 import AgreementXray from "@/components/AgreementXray";
 import HouseCard from "@/components/HouseCard";
@@ -16,6 +16,14 @@ import type {
 } from "@/lib/types";
 
 type View = "landing" | "matches" | "deep" | "agreement";
+
+interface DeepSnapshot {
+  houseStates: Record<HouseKey, HouseStatus>;
+  results: Partial<Record<HouseKey, HouseResult>>;
+  listing: Listing | null;
+  verdict: Verdict | null;
+  feed: FeedLine[];
+}
 
 const initialStates = () =>
   Object.fromEntries(HOUSES.map((h) => [h.key, "pending"])) as Record<HouseKey, HouseStatus>;
@@ -38,6 +46,9 @@ async function consumeSSE(res: Response, onEvent: (e: any) => void) {
   }
 }
 
+const MATCH_KEY = "fk-match-v1";
+const DEEP_KEY = "fk-deep-v1";
+
 export default function Page() {
   const [view, setView] = useState<View>("landing");
 
@@ -57,17 +68,74 @@ export default function Page() {
   const [deepFeed, setDeepFeed] = useState<FeedLine[]>([]);
   const [error, setError] = useState<string | null>(null);
   const feedId = useRef(0);
+  const deepCache = useRef(new Map<string, DeepSnapshot>());
+  const restored = useRef(false);
+
+  // ================= NAVIGATION (browser-history backed) =================
+  const navigate = useCallback((v: View, push = true) => {
+    setView(v);
+    if (push && typeof window !== "undefined") window.history.pushState({ view: v }, "");
+  }, []);
+
+  useEffect(() => {
+    window.history.replaceState({ view: "landing" }, "");
+    const onPop = (e: PopStateEvent) => setView((e.state?.view as View) ?? "landing");
+    window.addEventListener("popstate", onPop);
+
+    // ---- restore persisted state (reload-proof) ----
+    try {
+      const m = sessionStorage.getItem(MATCH_KEY);
+      if (m) {
+        const s = JSON.parse(m);
+        setIntent(s.intent ?? null);
+        setCandidates(s.candidates ?? []);
+        setOrder(s.order ?? null);
+        setRequirements(s.requirements ?? "");
+        setMatchFeed(s.matchFeed ?? []);
+        feedId.current = s.feedId ?? 1000;
+      }
+      const d = sessionStorage.getItem(DEEP_KEY);
+      if (d) deepCache.current = new Map(Object.entries(JSON.parse(d)));
+    } catch {
+      /* corrupted storage — start fresh */
+    }
+    restored.current = true;
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
+  // ---- persist match state ----
+  useEffect(() => {
+    if (!restored.current || candidates.length === 0) return;
+    try {
+      sessionStorage.setItem(
+        MATCH_KEY,
+        JSON.stringify({ intent, candidates, order, requirements, matchFeed, feedId: feedId.current })
+      );
+    } catch {
+      /* quota — skip */
+    }
+  }, [intent, candidates, order, requirements, matchFeed]);
+
+  const persistDeepCache = () => {
+    try {
+      const obj: Record<string, DeepSnapshot> = {};
+      deepCache.current.forEach((v, k) => {
+        // audio is heavy — regenerable via browser TTS fallback
+        obj[k] = { ...v, verdict: v.verdict ? { ...v.verdict, audio_b64: null } : null };
+      });
+      sessionStorage.setItem(DEEP_KEY, JSON.stringify(obj));
+    } catch {
+      /* quota — in-memory cache still works */
+    }
+  };
 
   const pushMatchFeed = useCallback((message: string, tone?: string) => {
     setMatchFeed((f) => [...f, { id: feedId.current++, message, tone }]);
   }, []);
-  const pushDeepFeed = useCallback((message: string, tone?: string) => {
-    setDeepFeed((f) => [...f, { id: feedId.current++, message, tone }]);
-  }, []);
 
   // ================= MATCHMAKING =================
   const startMatch = async (req: MatchRequest) => {
-    setView("matches");
+    navigate("matches");
     setIntent(null);
     setCandidates([]);
     setOrder(null);
@@ -75,6 +143,7 @@ export default function Page() {
     setError(null);
     setMatchLive(true);
     setRequirements(req.requirements);
+    sessionStorage.removeItem(MATCH_KEY);
 
     try {
       const res = await fetch("/api/match", {
@@ -130,14 +199,38 @@ export default function Page() {
   };
 
   // ================= DEEP DIVE =================
+  const applySnapshot = (s: DeepSnapshot) => {
+    setHouseStates(s.houseStates);
+    setResults(s.results);
+    setListing(s.listing);
+    setVerdict(s.verdict);
+    setDeepFeed(s.feed);
+  };
+
   const startDeepDive = async (c: MatchCandidate) => {
-    setView("deep");
-    setHouseStates(initialStates());
-    setResults({});
-    setListing(null);
-    setVerdict(null);
-    setDeepFeed([]);
+    navigate("deep");
     setError(null);
+
+    // already read this flat? restore instantly — no re-run.
+    const cached = deepCache.current.get(c.url);
+    if (cached?.verdict) {
+      applySnapshot(cached);
+      return;
+    }
+
+    const snap: DeepSnapshot = {
+      houseStates: initialStates(),
+      results: {},
+      listing: null,
+      verdict: null,
+      feed: [],
+    };
+    applySnapshot(snap);
+
+    const pushFeed = (message: string, tone?: string) => {
+      snap.feed = [...snap.feed, { id: feedId.current++, message, tone }];
+      setDeepFeed(snap.feed);
+    };
 
     try {
       const res = await fetch("/api/analyze", {
@@ -148,26 +241,32 @@ export default function Page() {
       await consumeSSE(res, (e: AnalyzeEvent) => {
         switch (e.type) {
           case "status":
-            pushDeepFeed(e.message, "reason");
+            pushFeed(e.message, "reason");
             break;
           case "agent_log":
-            pushDeepFeed(e.message, e.tone);
+            pushFeed(e.message, e.tone);
             break;
           case "listing_ready":
+            snap.listing = e.listing;
             setListing(e.listing);
             break;
           case "house_running":
-            setHouseStates((s) => ({ ...s, [e.house]: "running" }));
+            snap.houseStates = { ...snap.houseStates, [e.house]: "running" };
+            setHouseStates(snap.houseStates);
             break;
           case "house_complete":
-            setHouseStates((s) => ({ ...s, [e.result.house]: "complete" }));
-            setResults((r) => ({ ...r, [e.result.house]: e.result }));
+            snap.houseStates = { ...snap.houseStates, [e.result.house]: "complete" };
+            snap.results = { ...snap.results, [e.result.house]: e.result };
+            setHouseStates(snap.houseStates);
+            setResults(snap.results);
             break;
           case "house_failed":
-            setHouseStates((s) => ({ ...s, [e.house]: "failed" }));
-            pushDeepFeed(`△ ${e.house}: ${e.reason}`, "warn");
+            snap.houseStates = { ...snap.houseStates, [e.house]: "failed" };
+            setHouseStates(snap.houseStates);
+            pushFeed(`△ ${e.house}: ${e.reason}`, "warn");
             break;
           case "verdict":
+            snap.verdict = e.verdict;
             setVerdict(e.verdict);
             break;
           case "error":
@@ -175,6 +274,10 @@ export default function Page() {
             break;
         }
       });
+      if (snap.verdict) {
+        deepCache.current.set(c.url, snap);
+        persistDeepCache();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Analysis failed");
     }
@@ -187,31 +290,47 @@ export default function Page() {
 
   const orderedResults = HOUSES.map((h) => results[h.key]).filter(Boolean) as HouseResult[];
   const profileLine = intent?.summary ?? (requirements ? requirements : "आप");
+  const hasResults = candidates.length > 0;
 
   return (
     <main className="mx-auto min-h-screen max-w-7xl px-6 pb-24">
       {/* ---- header ---- */}
       <header className="flex items-center justify-between py-6">
-        <button onClick={() => setView("landing")} className="flex items-baseline gap-3 text-left" title="Start over">
+        <button onClick={() => navigate("landing")} className="flex items-baseline gap-3 text-left" title="Home">
           <span className="font-deva text-[20px] text-gold">फ्लैट कुंडली</span>
           <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-ink3">Flat Kundali</span>
         </button>
-        <p className="text-[11px] uppercase tracking-[0.22em] text-ink3">
-          Sarvam.ai × Anakin.io · AI Engineer Mixer, Bengaluru
-        </p>
+        <div className="flex items-center gap-5">
+          {hasResults && view !== "matches" && (
+            <button
+              onClick={() => navigate("matches")}
+              className="rounded-full border border-gold/25 bg-black/25 px-3.5 py-1.5 text-[11.5px] text-gold/90 transition-colors hover:border-gold/50"
+            >
+              ↩ Your rishtas
+            </button>
+          )}
+          <p className="hidden text-[11px] uppercase tracking-[0.22em] text-ink3 md:block">
+            Sarvam.ai × Anakin.io · Bengaluru
+          </p>
+        </div>
       </header>
       <div className="hairline" />
 
       <AnimatePresence mode="wait">
         {view === "landing" && (
           <motion.div key="landing" exit={{ opacity: 0, y: -18 }} transition={{ duration: 0.35 }}>
-            <Landing onMatch={startMatch} onAgreement={() => setView("agreement")} />
+            <Landing
+              onMatch={startMatch}
+              onAgreement={() => navigate("agreement")}
+              canResume={hasResults}
+              onResume={() => navigate("matches")}
+            />
           </motion.div>
         )}
 
         {view === "agreement" && (
           <motion.div key="agreement" exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
-            <AgreementXray onBack={() => setView("landing")} />
+            <AgreementXray onBack={() => navigate("landing")} />
           </motion.div>
         )}
 
@@ -225,7 +344,7 @@ export default function Page() {
             transition={{ duration: 0.4 }}
             className="mx-auto max-w-3xl pt-8"
           >
-            <button onClick={() => setView("landing")} className="mb-5 text-[12.5px] text-ink3 hover:text-gold">
+            <button onClick={() => navigate("landing")} className="mb-5 text-[12.5px] text-ink3 hover:text-gold">
               ← New search
             </button>
 
@@ -261,7 +380,7 @@ export default function Page() {
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                   />
-                  Reading your requirements &amp; searching the live web…
+                  Reading your requirements &amp; sweeping rental platforms…
                 </div>
               )}
             </div>
@@ -287,7 +406,7 @@ export default function Page() {
             className="grid gap-10 pt-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]"
           >
             <div className="lg:sticky lg:top-8 lg:self-start">
-              <button onClick={() => setView("matches")} className="mb-4 text-[12.5px] text-ink3 hover:text-gold">
+              <button onClick={() => navigate("matches")} className="mb-4 text-[12.5px] text-ink3 hover:text-gold">
                 ← Back to matches
               </button>
               <KundaliChart

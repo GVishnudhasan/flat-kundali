@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useRef, useState } from "react";
+import { Icon } from "./icons";
 import type { Verdict } from "@/lib/types";
 
 const LABEL_STYLE: Record<string, string> = {
@@ -75,7 +76,7 @@ export default function VerdictPanel({ verdict }: { verdict: Verdict }) {
             Playing verdict…
           </>
         ) : (
-          <>🔊 Suno — hear the verdict in Hindi</>
+          <><Icon name="volume" size={17} /> Suno — hear the verdict in Hindi</>
         )}
       </button>
       <p className="mt-2.5 text-center text-[11px] text-ink3">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { Icon } from "./icons";
 
 interface Props {
   onTranscript: (text: string) => void;
@@ -57,9 +58,9 @@ export default function MicButton({ onTranscript }: Props) {
       {state === "transcribing" ? (
         <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-gold/30 border-t-gold" />
       ) : state === "recording" ? (
-        "■"
+        <Icon name="stop" size={15} className="fill-current" />
       ) : (
-        "🎤"
+        <Icon name="mic" size={17} />
       )}
     </button>
   );

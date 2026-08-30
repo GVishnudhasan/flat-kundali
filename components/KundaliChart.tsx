@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { HOUSES, SELF_DIAMOND, YOU_DIAMOND, scoreStatus } from "@/lib/houses";
+import { ICON_PATHS } from "./icons";
 import type { HouseKey, HouseResult, HouseStatus, Listing, Verdict } from "@/lib/types";
 
 const STATUS_FILL: Record<string, string> = {
@@ -178,7 +179,18 @@ export default function KundaliChart({ houseStates, results, listing, verdict, p
           const [ax, ay] = h.anchor;
           return (
             <g key={h.key} textAnchor="middle" pointerEvents="none" opacity={dim ? 0.38 : 1}>
-              <text x={ax} y={ay - 12} fontSize="24">{h.emoji}</text>
+              <g
+                transform={`translate(${ax - 12}, ${ay - 34})`}
+                stroke="#e7c368"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+              >
+                {ICON_PATHS[h.icon].map((d, i) => (
+                  <path key={i} d={d} />
+                ))}
+              </g>
               <text x={ax} y={ay + 10} fill="#cfd3e2" fontSize="11.5" letterSpacing="2.2" fontFamily="var(--font-body)">
                 {h.label.toUpperCase()}
               </text>

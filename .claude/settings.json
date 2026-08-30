@@ -5,7 +5,15 @@
       "Bash(security find-internet-password *)",
       "Bash(security find-generic-password *)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(curl -s -X POST https://github.com/login/device/code -H \"Accept: application/json\" -d \"client_id=178c6fc778ccc68e1d6a&scope=repo\")",
+      "Read(//private/tmp/**)",
+      "Bash(curl -s -H 'Authorization: token __TRACKED_VAR__' https://api.github.com/user)",
+      "Bash(curl -s -X POST https://api.github.com/user/repos -H 'Authorization: token __CMDSUB_OUTPUT__' -H 'Accept: application/vnd.github+json' -d '{\"name\":\"flat-kundali\",\"description\":\"Match your kundali with a flat'\\\\''s — agentic due-diligence for Bengaluru rentals\",\"private\":false}')",
+      "Bash(/usr/bin/python3 -)",
+      "Bash(curl -s -o /dev/null -w \"dev: %{http_code}\\\\n\" http://localhost:3123)",
+      "Bash(SHOOT_BASE=http://localhost:3123 node scripts/shoot.mjs)",
+      "Bash(rm -f .cache/*.json)"
     ]
   }
 }

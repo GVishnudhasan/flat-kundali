@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { createHash } from "crypto";
 import { promises as fs } from "fs";
 import path from "path";
-import { MOCK_RUN } from "@/lib/mock";
+import { MOCK_CANDIDATES, MOCK_RUN } from "@/lib/mock";
 import { runPipeline } from "@/lib/pipeline";
 import type { AnalyzeEvent, AnalyzeRequest } from "@/lib/types";
 
@@ -34,10 +34,10 @@ export async function POST(req: NextRequest) {
       const emit = (e: AnalyzeEvent) => controller.enqueue(encoder.encode(sse(e)));
 
       try {
-        // 1) Mock mode or the fictional example URL → scripted cinematic replay.
+        // 1) Mock mode or any fictional demo-candidate URL → scripted replay.
         // 2) Cache hit → replay a previous real run (wifi-proof demo).
         // 3) Otherwise → live agentic pipeline; record it into the cache.
-        const isDemoUrl = body.listingUrl.includes("sobha-dream-acres-2bhk");
+        const isDemoUrl = MOCK_CANDIDATES.some((c) => c.url === body.listingUrl);
         const replay = isMock() || isDemoUrl ? MOCK_RUN : await readCache(key);
 
         if (replay) {

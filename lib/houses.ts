@@ -4,7 +4,7 @@ export interface HouseDef {
   key: HouseKey;
   label: string;
   hindi: string;
-  emoji: string;
+  icon: string; // key into ICON_PATHS
   // kundali chart region: polygon points + content anchor
   points: string;
   anchor: [number, number];
@@ -19,7 +19,7 @@ export const HOUSES: HouseDef[] = [
     key: "water",
     label: "Water",
     hindi: "जल",
-    emoji: "💧",
+    icon: "droplet",
     points: "20,20 320,20 20,320",
     anchor: [118, 112],
   },
@@ -27,7 +27,7 @@ export const HOUSES: HouseDef[] = [
     key: "commute",
     label: "Commute",
     hindi: "यात्रा",
-    emoji: "🚦",
+    icon: "route",
     points: "620,20 320,20 620,320",
     anchor: [522, 112],
   },
@@ -35,7 +35,7 @@ export const HOUSES: HouseDef[] = [
     key: "society",
     label: "Society",
     hindi: "समाज",
-    emoji: "🏢",
+    icon: "building",
     points: "20,320 170,170 320,320 170,470",
     anchor: [163, 320],
   },
@@ -43,7 +43,7 @@ export const HOUSES: HouseDef[] = [
     key: "price",
     label: "Price",
     hindi: "मूल्य",
-    emoji: "💰",
+    icon: "rupee",
     points: "620,320 470,170 320,320 470,470",
     anchor: [477, 320],
   },
@@ -51,7 +51,7 @@ export const HOUSES: HouseDef[] = [
     key: "redflags",
     label: "Red Flags",
     hindi: "दोष",
-    emoji: "⚠️",
+    icon: "alert",
     points: "20,620 20,320 320,620",
     anchor: [118, 528],
   },
@@ -59,7 +59,7 @@ export const HOUSES: HouseDef[] = [
     key: "livability",
     label: "Livability",
     hindi: "जीवन",
-    emoji: "🌳",
+    icon: "leaf",
     points: "620,620 620,320 320,620",
     anchor: [522, 528],
   },

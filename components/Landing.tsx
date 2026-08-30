@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import MicButton from "./MicButton";
+import { Icon } from "./icons";
 import type { MatchRequest } from "@/lib/types";
 
 const EXAMPLE_URL = "https://www.nobroker.in/sobha-dream-acres-2bhk";
@@ -17,9 +18,13 @@ const rise = (delay: number) => ({
 export default function Landing({
   onMatch,
   onAgreement,
+  canResume,
+  onResume,
 }: {
   onMatch: (req: MatchRequest) => void;
   onAgreement: () => void;
+  canResume: boolean;
+  onResume: () => void;
 }) {
   const [url, setUrl] = useState("");
   const [req, setReq] = useState("");
@@ -35,17 +40,29 @@ export default function Landing({
         <span className="text-gold">with a flat&rsquo;s.</span>
       </motion.h1>
       <motion.p {...rise(0.22)} className="mt-5 max-w-xl text-[15px] leading-relaxed text-ink2">
-        Speak your requirements — or drop a listing you like. Agents search the live web,
-        read every candidate against your life, and return a ranked list of rishtas,
-        each with its guna score. In your language, with sources.
+        Speak your requirements — or drop a listing you like. Agents sweep NoBroker,
+        MagicBricks, Housing, 99acres, RentMyStay &amp; more, read every candidate against
+        your life, and return a ranked list of rishtas with guna scores. In your language, with sources.
       </motion.p>
+
+      {canResume && (
+        <motion.button
+          {...rise(0.26)}
+          onClick={onResume}
+          className="mt-6 rounded-full border border-gold/35 bg-gold/10 px-5 py-2 text-[12.5px] font-medium text-gold transition-colors hover:border-gold/60"
+        >
+          ↩ Back to your last results
+        </motion.button>
+      )}
 
       {/* ---- two entry modes ---- */}
       <div className="mt-12 grid w-full max-w-4xl gap-5 md:grid-cols-2">
         {/* voice / requirements */}
         <motion.div {...rise(0.3)} className="glass group flex flex-col rounded-3xl p-7 text-left transition-shadow hover:shadow-glow">
           <div className="mb-1 flex items-center gap-3">
-            <span className="text-2xl">🎙️</span>
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/25 bg-black/25 text-gold">
+              <Icon name="mic" size={19} />
+            </span>
             <h2 className="font-display text-[21px] text-ink">Find flats for me</h2>
           </div>
           <p className="mb-5 text-[12.5px] leading-relaxed text-ink3">
@@ -80,7 +97,9 @@ export default function Landing({
         {/* link mode */}
         <motion.div {...rise(0.38)} className="glass group flex flex-col rounded-3xl p-7 text-left transition-shadow hover:shadow-glow">
           <div className="mb-1 flex items-center gap-3">
-            <span className="text-2xl">🔗</span>
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/25 bg-black/25 text-gold">
+              <Icon name="link" size={18} />
+            </span>
             <h2 className="font-display text-[21px] text-ink">I found a flat — check it</h2>
           </div>
           <p className="mb-5 text-[12.5px] leading-relaxed text-ink3">
@@ -130,7 +149,9 @@ export default function Landing({
         className="glass mt-6 flex w-full max-w-4xl items-center justify-between rounded-2xl px-6 py-4 text-left transition-colors hover:!border-gold/40"
       >
         <div className="flex items-center gap-4">
-          <span className="text-xl">📜</span>
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-gold/25 bg-black/25 text-gold">
+            <Icon name="file" size={17} />
+          </span>
           <div>
             <p className="text-[14px] font-semibold text-ink">
               Agreement X-Ray

@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { gunaStatus } from "@/lib/houses";
+import { Icon } from "./icons";
 import type { MatchCandidate } from "@/lib/types";
 
 const STATUS_STROKE: Record<string, string> = {
@@ -105,8 +106,8 @@ export default function MatchCard({
             ))}
           </div>
           {c.dealbreaker && (
-            <p className="mt-2.5 rounded-lg border border-risk/30 bg-risk/10 px-3 py-2 text-[12px] text-risk">
-              ⚠ Dealbreaker · {c.dealbreaker}
+            <p className="mt-2.5 flex items-start gap-2 rounded-lg border border-risk/30 bg-risk/10 px-3 py-2 text-[12px] text-risk">
+              <Icon name="alert" size={14} className="mt-0.5" /> <span>Dealbreaker · {c.dealbreaker}</span>
             </p>
           )}
           <button
